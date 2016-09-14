@@ -7,6 +7,7 @@
 #Date: 9/12/16
 
 # IMPORTS #
+import sys
 import time
 
 class A_Node:
@@ -39,7 +40,7 @@ class Graph:
 			self.verticies[value] = []
 
 	def addEdge(self, val1, val2, distance):
-		if val1 not in self.verticies and val2 not in self.veriticies:
+		if val1 not in self.verticies and val2 not in self.verticies:
 			print "One or more vertices not found."
 		else:
 			self.verticies[val1].append(val2 + ", " + distance)
@@ -51,12 +52,12 @@ class Graph:
 		else:
 			print "Vertex not found."
 
-def read_file():
+def read_file(filename):
 	#Create lists containing the edges and heuristics provided in the text file
 	edges = []
 	heuristics = []
 
-	file = open("Assignment_3.txt", "r").read()
+	file = open(filename, "r").read()
 	contents = file.splitlines()
 	for item in contents:
 		if item == "":
@@ -208,6 +209,7 @@ def a_star_search(graph, nodes, start, end):
 					if f_of_n < old_f_of_n:
 						neighbor.parent = smallest_node
 						neighbor.f_of_n = f_of_n
+						print neighbor.f_of_n
 
 				#Otherwise, if our node does not already exist in the open list...
 				else:
@@ -218,14 +220,17 @@ def a_star_search(graph, nodes, start, end):
 
 					#Get the neighbor's distance so far
 					neighbor.distance_so_far = int(smallest_node.distance[neighbor.name]) + neighbor.parent.distance_so_far
-					open_verticies.append(neighbor)
+					if neighbor not in closed_verticies:
+						open_verticies.append(neighbor)
 
 			print "Visiting Node:", smallest_node.name + "..."
 			nodes_visited += 1
 
 		#Otherwise, we know we've reached our destination
 		else:
+			print "Visiting Node:", smallest_node.name + "..."
 			time_end = time.time()
+			nodes_visited += 1
 
 			#Trail the parent of F to construct our path
 			path = []
@@ -309,14 +314,17 @@ def dijkstra_search(graph, nodes, start, end):
 
 					#Get the neighbor's distance so far
 					neighbor.distance_so_far = int(smallest_node.distance[neighbor.name]) + neighbor.parent.distance_so_far
-					open_verticies.append(neighbor)
+					if neighbor not in closed_verticies:
+						open_verticies.append(neighbor)
 
 			print "Visiting Node:", smallest_node.name + "..."
 			nodes_visited += 1
 
 		#Otherwise, we know we've reached our destination
 		else:
+			print "Visiting Node:", smallest_node.name + "..."
 			time_end = time.time()
+			nodes_visited += 1
 
 			#Trail the parent of F to construct our path
 			path = []
@@ -340,19 +348,23 @@ def dijkstra_search(graph, nodes, start, end):
 			break
 
 
+def main(argv):
+	filename = argv[-1]
+	edges, heuristics = read_file(filename)
+	graph = create_graph(edges, heuristics)
+	A_nodes, D_nodes = create_nodes(graph, edges, heuristics)
+	for node in A_nodes:
+		if node.name == "S":
+			A_start = node
+		elif node.name == "F":
+			A_end = node
+	for node in D_nodes:
+		if node.name == "S":
+			D_start = node
+		elif node.name == "F":
+			D_end = node
+	a_star_search(graph, A_nodes, A_start, A_end)
+	dijkstra_search(graph, D_nodes, D_start, D_end)
 
-edges, heuristics = read_file()
-graph = create_graph(edges, heuristics)
-A_nodes, D_nodes = create_nodes(graph, edges, heuristics)
-for node in A_nodes:
-	if node.name == "S":
-		A_start = node
-	elif node.name == "F":
-		A_end = node
-for node in D_nodes:
-	if node.name == "S":
-		D_start = node
-	elif node.name == "F":
-		D_end = node
-a_star_search(graph, A_nodes, A_start, A_end)
-dijkstra_search(graph, D_nodes, D_start, D_end)
+if __name__ == "__main__":
+	main(sys.argv)
